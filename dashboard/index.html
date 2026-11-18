@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols priced off a tested comps curve</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="dot" aria-hidden="true"></span><h1>TOKEN RADAR</h1><span class="tag">radar-3 / curve</span></div>
+  <p class="sub">Every protocol that records no token, priced off a comps curve that was fitted on the traded tokens and tested blind — from a sealed DefiLlama snapshot, nothing else.</p>
+  <dl class="stats" id="stats"></dl>
+</header>
+<nav class="tabs" aria-label="Views">
+  <button data-view="board" class="on" type="button">Board</button>
+  <button data-view="live" type="button">Have a token</button>
+  <button data-view="method" type="button">How it works</button>
+</nav>
+<section class="controls" id="controls" aria-label="Board filters">
+  <label>Search <input id="q" type="search" placeholder="name or slug…" autocomplete="off"></label>
+  <label>Category <select id="cat"><option value="">All categories</option></select></label>
+  <label>Chain <select id="chain"><option value="">All chains</option></select></label>
+  <label>Min TVL <select id="mintvl">
+    <option value="0">Any TVL</option><option value="5000000">$5M+</option><option value="50000000">$50M+</option>
+    <option value="500000000">$500M+</option><option value="1000000000">$1B+</option>
+  </select></label>
+  <label class="check"><input id="watch" type="checkbox"> Watchlist only</label>
+  <label>Sort <select id="sort">
+    <option value="rank">Implied value</option><option value="tvl">TVL</option>
+    <option value="growth">7-day growth</option><option value="age">Age</option><option value="name">Name</option>
+  </select></label>
+  <span class="count" id="count" aria-live="polite"></span>
+</section>
+<main>
+  <div id="boardView">
+    <table id="board">
+      <thead><tr>
+        <th data-k="rank">#</th><th data-k="name">Protocol</th><th data-k="cat">Category</th>
+        <th data-k="chain">Chains</th><th data-k="tvl">TVL</th><th data-k="g7">7d</th>
+        <th data-k="age">Age</th><th data-k="iv">Implied value</th><th data-k="range">Rank range</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="hint">Click any row for its detail view and farm plan. Ranks are the model's claim, not the table's sort order. The rank range is where the row lands across 200 refits of the curve — a wide range means the curve is unsure about that row.</p>
+    <section id="detail" class="detail" hidden aria-label="Protocol detail"></section>
+  </div>
+  <div id="liveView" hidden>
+    <p class="lede">These <b id="liveCount"></b> protocols record a token, so the market — not the model — prices them. The 24 largest by market cap are shown; they are set aside from the ranked board.</p>
+    <table id="live">
+      <thead><tr><th>Protocol</th><th>Category</th><th>TVL</th><th>Market cap</th><th>FDV / TVL</th><th>7d</th></tr></thead>
+      <tbody id="liveRows"></tbody>
+    </table>
+  </div>
+  <div id="methodView" hidden>
+    <h2>How the board is built</h2>
+    <p class="lede">One snapshot in, one ranking out. No names are special-cased: the same curve prices every row, and the comparables come from this snapshot alone.</p>
+    <h3>The curve</h3>
+    <p id="curveText"></p>
+    <div id="chart" class="chart" aria-label="Comparables chart: log market cap against log TVL"></div>
+    <p class="note">Each dot is one traded token in this snapshot, one per ticker. The line is the fitted curve. A flat multiple would be a line of slope 1.00 through the same dots — the market does not pay that: big protocols trade at a lower multiple than small ones, and the curve says by how much.</p>
+    <h3>The blind test</h3>
+    <p>The curve was not picked by taste. Three models were fitted on the traded tokens and tested on tokens they had not seen — first by repeated 5-fold cross-validation, then walk-forward: fitted only on protocols listed before a cutoff date, tested on the ones listed after it. The error is the median absolute log error on the held-out market caps; lower is better.</p>
+    <div id="blindTables"></div>
+    <h3>Terms that were tried and dropped</h3>
+    <p id="termsText"></p>
+    <h3>Rank ranges</h3>
+    <p id="bootText"></p>
+    <h3>Who gets ranked</h3>
+    <p>The board covers the snapshot's whole 40-protocol watchlist, then every other protocol that records no token and passes the watchlist's own exclusion rule without its $50M floor: no exchange, no bridge, no liquid staking or restaking, no versioned pool, no wrapped or staked product, no exchange-branded product. Protocols that record a token are set aside in the <b>Have a token</b> view.</p>
+    <h3>What “records no token” means</h3>
+    <p>DefiLlama's record is not proof: a protocol on this board may still have a token its record does not carry. The board ranks what the record shows and says so on every row — it never claims a protocol has no token, only that none is recorded.</p>
+    <h3>What the snapshot does not carry</h3>
+    <p>The snapshot carries no volume and no social figures, so no volume or social signal can be derived from it. The only momentum figure it carries is the 7-day TVL change, shown on the board; it was tested as an extra term and did not improve the blind test, so it does not move the value.</p>
+    <h3>Flat multiples, for reference</h3>
+    <p>What a category-median multiple would say, per category. The board does not use these — the curve beats them in the blind test above — but they are the honest comparison.</p>
+    <table id="comps"><thead><tr><th>Category</th><th>Live protocols</th><th>Median FDV / TVL</th></tr></thead><tbody id="compRows"></tbody></table>
+    <p class="src" id="src"></p>
+  </div>
+</main>
+<footer><span id="foot"></span></footer>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
